@@ -1,0 +1,19 @@
+# 本番用
+fastapi==0.115.14
+uvicorn==0.35.0
+pydantic==2.11.7
+pydantic_core==2.33.2
+annotated-types==0.7.0
+typing-inspection==0.4.1
+typing_extensions==4.14.1
+
+# Lambdaデプロイ用アダプタ
+mangum==0.17.0
+
+# 非同期周辺
+anyio==4.9.0
+sniffio==1.3.1
+h11==0.16.0
+httptools==0.6.4
+uvloop==0.21.0
+websockets==15.0.1

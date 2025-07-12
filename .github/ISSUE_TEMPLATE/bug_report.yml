@@ -1,0 +1,69 @@
+name: バグ報告
+description: バックエンドの不具合を報告する
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。
+        以下の項目をできるだけ詳しく記入してください。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 問題の内容
+      description: どんな問題が発生したのか具体的に記述してください
+      placeholder: 例）POST /api/users のレスポンスが500エラーが発生した
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 問題を再現する手順を記載してください
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する結果
+      description: 本来どう動くべきだったのか記述してください
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境情報
+      description: 実行環境の情報を記入してください（可能な範囲で）。
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Python バージョン: 3.11
+        - FastAPI バージョン: 0.95.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: エラーログ・スタックトレース
+      description: 関連するログやスタックトレースがあれば貼り付けてください。
+      placeholder: |
+        Traceback (most recent call last):
+          ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他の情報
+      description: スクリーンショットや関連するリンクがあればここに追加してください。
+    validations:
+      required: false

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile -t raretech-bot .
+
+      - name: Run flake8 in Docker
+        run: docker run --rm raretech-bot flake8 app
+
+  health-check:
+    name: Build & Health Check
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile -t raretech-bot .
+
+      - name: Run API and check endpoint
+        run: |
+          docker run -d -p 8000:8000 --name test-api raretech-bot
+          sleep 5
+          curl -f http://localhost:8000 || (docker logs test-api && exit 1)
