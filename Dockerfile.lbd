@@ -1,0 +1,13 @@
+# Dockerfile.lbd
+FROM public.ecr.aws/lambda/python:3.11
+
+# 必要なパッケージをインストール
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# アプリコードをコピー
+COPY app/ app/
+COPY lambda_handler.py .
+
+# Lambda用ハンドラー（lambda_handler.pyのhandler関数）
+CMD ["lambda_handler.handler"]
