@@ -16,7 +16,6 @@ table = dynamodb.Table(settings.DYNAMO_TABLE_NAME)
 def get_template():
     response = table.scan()
     items = response.get("Items", [])
-    
     # 1. テンプレートが存在しない → デフォルトテンプレートを返す
     if not items:
         return "🚨 デフォルトテンプレート：記事を読んでね！"
@@ -39,5 +38,3 @@ def get_template():
         # フォールバック：どれか1つランダムに返す（created_at が壊れていた場合）
         print(f"テンプレートのソートに失敗: {e}")
         return random.choice(items)["template"]
-
-

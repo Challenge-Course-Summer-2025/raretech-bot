@@ -8,7 +8,7 @@ down:
 	docker compose down
 
 exec:
-	docker compose exec web bash
+	docker compose exec -it fastapi bash
 
 logs:
 	docker compose logs
