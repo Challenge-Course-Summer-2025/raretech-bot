@@ -1,7 +1,8 @@
 # 開発用
 -r requirements.txt
 
-python-dotenv==1.1.1  # 環境変数読み込み
+# 環境変数読み込み
+python-dotenv==1.1.1
 
 # Lint・フォーマッタ
 flake8==7.3.0

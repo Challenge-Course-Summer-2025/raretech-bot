@@ -1,15 +1,27 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
-    container_name: app
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     volumes:
       - ./app:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    environment:
-      - PYTHONPATH=/
+    env_file:
+      - .env
+    depends_on:
+      - dynamodb
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dynamodb-local
+    ports:
+      - "8001:8000"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+
+volumes:
+  dynamodb-data:
