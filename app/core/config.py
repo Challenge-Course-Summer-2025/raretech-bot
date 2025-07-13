@@ -20,7 +20,10 @@ class Settings(BaseSettings):
         AWS Secrets Manager からシークレットを読み込んで環境変数を上書き
         """
         session = boto3.session.Session()
-        client = session.client(service_name="secretsmanager", region_name=self.AWS_REGION)
+        client = session.client(
+            service_name="secretsmanager",
+            region_name=self.AWS_REGION
+            )
 
         try:
             response = client.get_secret_value(SecretId=secret_name)
@@ -34,10 +37,11 @@ class Settings(BaseSettings):
                 setattr(self, key, value)
 
 
-
-
 settings = Settings()
+
 
 # 本番環境の場合は Secrets Manager を適用
 if os.getenv("ENV") == "production":
-    settings.load_secrets(secret_name=os.getenv("SECRETS_NAME", "raretech-bot-secret"))
+    settings.load_secrets(
+        secret_name=os.getenv("SECRETS_NAME", "raretech-bot-secret")
+        )

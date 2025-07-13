@@ -22,7 +22,7 @@ jobs:
         run: docker build -f Dockerfile -t raretech-bot .
 
       - name: Run flake8 in Docker
-        run: docker run --rm raretech-bot flake8 app
+        run: docker run --rm raretech-bot flake8 .
 
   health-check:
     name: Build & Health Check
