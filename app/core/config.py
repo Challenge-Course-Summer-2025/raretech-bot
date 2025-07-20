@@ -1,16 +1,19 @@
 import os
 import json
 import boto3
-from pydantic import BaseSettings
+from typing import Optional
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DYNAMO_TABLE_NAME: str = "post_template"
-    AWS_REGION: str = "ap-northeast-1"
+    AWS_REGION: str
     X_API_KEY: str
     X_API_SECRET: str
     X_ACCESS_TOKEN: str
     X_ACCESS_TOKEN_SECRET: str
+    DYNAMODB_ENDPOINT: Optional[str] = None
+    DB_TABLE_POST_HISTORY: str = "Posts"
+    DB_TABLE_TEMPLATE: str = "Templates"
 
     class Config:
         env_file = ".env"
