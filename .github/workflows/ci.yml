@@ -35,7 +35,19 @@ jobs:
         run: docker build -f Dockerfile -t raretech-bot .
 
       - name: Run API and check endpoint
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
         run: |
-          docker run -d -p 8000:8000 --name test-api raretech-bot
+          docker run -d -p 8000:8000 --name test-api \
+            -e AWS_REGION=$AWS_REGION \
+            -e X_API_KEY=$X_API_KEY \
+            -e X_API_SECRET=$X_API_SECRET \
+            -e X_ACCESS_TOKEN=$X_ACCESS_TOKEN \
+            -e X_ACCESS_TOKEN_SECRET=$X_ACCESS_TOKEN_SECRET \
+            raretech-bot
           sleep 5
           curl -f http://localhost:8000 || (docker logs test-api && exit 1)
