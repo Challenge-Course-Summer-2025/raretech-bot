@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # アプリコードをコピー
-COPY app/ app/
+COPY app/ .
 COPY lambda_handler.py .
 
 # Lambda用ハンドラー（lambda_handler.pyのhandler関数）
