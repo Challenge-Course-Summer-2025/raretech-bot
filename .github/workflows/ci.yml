@@ -36,11 +36,17 @@ jobs:
 
       - name: Run API and check endpoint
         env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          AWS_REGION: dummy
+          X_API_KEY: dummy
+          X_API_SECRET: dummy
+          X_ACCESS_TOKEN: dummy
+          X_ACCESS_TOKEN_SECRET: dummy
+          QIITA_ORGANIZATION_ID: dummy
+          MATTERMOST_WEBHOOK_URL: dummy
+          BEARER_TOKEN: dummy
+          X_USERNAME: dummy
+          DB_TABLE_POST_HISTORY: dummy
+          DB_TABLE_TEMPLATE: dummy
         run: |
           docker run -d -p 8000:8000 --name test-api \
             -e AWS_REGION=$AWS_REGION \
@@ -48,6 +54,12 @@ jobs:
             -e X_API_SECRET=$X_API_SECRET \
             -e X_ACCESS_TOKEN=$X_ACCESS_TOKEN \
             -e X_ACCESS_TOKEN_SECRET=$X_ACCESS_TOKEN_SECRET \
+            -e QIITA_ORGANIZATION_ID=$QIITA_ORGANIZATION_ID \
+            -e MATTERMOST_WEBHOOK_URL=$MATTERMOST_WEBHOOK_URL \
+            -e BEARER_TOKEN=$BEARER_TOKEN \
+            -e X_USERNAME=$X_USERNAME \
+            -e DB_TABLE_POST_HISTORY=$DB_TABLE_POST_HISTORY \
+            -e DB_TABLE_TEMPLATE=$DB_TABLE_TEMPLATE \
             raretech-bot
           sleep 5
           curl -f http://localhost:8000 || (docker logs test-api && exit 1)
