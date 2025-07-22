@@ -2,18 +2,29 @@ import os
 import json
 import boto3
 from typing import Optional
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 
+if os.getenv("ENV") != "production":
+    load_dotenv()
+
+
 class Settings(BaseSettings):
-    AWS_REGION: str
+    QIITA_ORGANIZATION_ID: str
+    MATTERMOST_WEBHOOK_URL: str
+    BEARER_TOKEN: str
     X_API_KEY: str
     X_API_SECRET: str
     X_ACCESS_TOKEN: str
     X_ACCESS_TOKEN_SECRET: str
+    X_USERNAME: str
     DYNAMODB_ENDPOINT: Optional[str] = None
-    DB_TABLE_POST_HISTORY: str = "Posts"
-    DB_TABLE_TEMPLATE: str = "Templates"
+    DB_TABLE_POST_HISTORY: str
+    DB_TABLE_TEMPLATE: str
+    AWS_REGION: str
+    AWS_ACCESS_KEY_ID: Optional[str] = None
+    AWS_SECRET_ACCESS_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"

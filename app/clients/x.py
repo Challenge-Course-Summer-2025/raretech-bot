@@ -11,8 +11,10 @@ class XClient:
             access_token=os.getenv("X_ACCESS_TOKEN"),
             access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET")
         )
+        self.username = os.getenv("X_USERNAME")
 
     def post_tweet(self, text: str):
         response = self.client.create_tweet(text=text)
         print("✅ ツイート成功:", response)
-        return response
+        tweet_id = response.data["id"]
+        return f"https://twitter.com/{self.username}/status/{tweet_id}"

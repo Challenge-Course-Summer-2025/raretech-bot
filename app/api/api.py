@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from api.endpoints import x
+from app.api.endpoints import post
 
 
 api_router = APIRouter()
 
-api_router.include_router(x.router, prefix="/x", tags=["X Bot"])
+api_router.include_router(post.router, tags=["dev Bot"])

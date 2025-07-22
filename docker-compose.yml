@@ -9,7 +9,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
+      - ./:/app
+      - .env:/app/.env
+    environment:
+      - ENV=dev
     env_file:
       - .env
     depends_on:
