@@ -35,7 +35,7 @@ class Settings(BaseSettings):
             self._load_secrets()
         super().__init__(**values)
 
-    def _load_secrets(self, secret_name: str):
+    def _load_secrets(self):
         secret_name = os.getenv("SECRETS_NAME", "raretech-bot-secret")
         region = os.getenv("AWS_REGION", "ap-northeast-1")
 
