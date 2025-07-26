@@ -29,31 +29,32 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-    def __init__(self, **values):
-        # 本番環境なら SecretsManager を先に読み込む
-        if os.getenv("ENV") == "production":
-            self._load_secrets()
-        super().__init__(**values)
 
-    def _load_secrets(self):
-        secret_name = os.getenv("SECRETS_NAME", "raretech-bot-secret")
-        region = os.getenv("AWS_REGION", "ap-northeast-1")
-
-        session = boto3.session.Session()
-        client = session.client(
-            service_name="secretsmanager",
-            region_name=region
-            )
-
-        try:
-            response = client.get_secret_value(SecretId=secret_name)
-            secret_dict = json.loads(response["SecretString"])
-        except Exception as e:
-            raise RuntimeError(f"Secrets Managerからシークレットを取得できませんでした: {e}")
-
-        # 各値を上書き
-        for key, value in secret_dict.items():
-            os.environ[key] = value
+def get_settings():
+    if os.getenv("ENV") == "production":
+        load_secrets()
+    return Settings()
 
 
-settings = Settings()
+def load_secrets():
+    secret_name = os.getenv("SECRETS_NAME", "raretech-bot-secret")
+    region = os.getenv("AWS_REGION", "ap-northeast-1")
+
+    session = boto3.session.Session()
+    client = session.client(
+        service_name="secretsmanager",
+        region_name=region
+        )
+
+    try:
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_dict = json.loads(response["SecretString"])
+    except Exception as e:
+        raise RuntimeError(f"Secrets Managerからシークレットを取得できませんでした: {e}")
+
+    # 各値を上書き
+    for key, value in secret_dict.items():
+        os.environ[key] = value
+
+
+settings = get_settings()
