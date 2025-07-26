@@ -29,14 +29,20 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-    def load_secrets(self, secret_name: str):
-        """
-        AWS Secrets Manager からシークレットを読み込んで環境変数を上書き
-        """
+    def __init__(self, **values):
+        # 本番環境なら SecretsManager を先に読み込む
+        if os.getenv("ENV") == "production":
+            self._load_secrets()
+        super().__init__(**values)
+
+    def _load_secrets(self, secret_name: str):
+        secret_name = os.getenv("SECRETS_NAME", "raretech-bot-secret")
+        region = os.getenv("AWS_REGION", "ap-northeast-1")
+
         session = boto3.session.Session()
         client = session.client(
             service_name="secretsmanager",
-            region_name=self.AWS_REGION
+            region_name=region
             )
 
         try:
@@ -48,14 +54,7 @@ class Settings(BaseSettings):
         # 各値を上書き
         for key, value in secret_dict.items():
             if hasattr(self, key):
-                setattr(self, key, value)
+                os.environ[key] = value
 
 
 settings = Settings()
-
-
-# 本番環境の場合は Secrets Manager を適用
-if os.getenv("ENV") == "production":
-    settings.load_secrets(
-        secret_name=os.getenv("SECRETS_NAME", "raretech-bot-secret")
-        )
