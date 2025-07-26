@@ -53,8 +53,7 @@ class Settings(BaseSettings):
 
         # 各値を上書き
         for key, value in secret_dict.items():
-            if hasattr(self, key):
-                os.environ[key] = value
+            os.environ[key] = value
 
 
 settings = Settings()
