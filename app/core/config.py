@@ -37,7 +37,7 @@ def get_settings():
 
 
 def load_secrets():
-    secret_name = os.getenv("SECRETS_NAME", "raretech-bot-secret")
+    secret_name = os.getenv("SECRETS_NAME", "raretech-bot")
     region = os.getenv("AWS_REGION", "ap-northeast-1")
 
     session = boto3.session.Session()
