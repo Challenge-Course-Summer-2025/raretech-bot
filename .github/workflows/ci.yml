@@ -47,6 +47,9 @@ jobs:
           X_USERNAME: dummy
           DB_TABLE_POST_HISTORY: dummy
           DB_TABLE_TEMPLATE: dummy
+          SHORTIO_ACCESS_TOKEN: dummy
+          DB_TABLE_ARTICLE_CLICKS: dummy
+          DB_TABLE_STATIC_LINK_CLICKS: dummy
         run: |
           docker run -d -p 8000:8000 --name test-api \
             -e AWS_REGION=$AWS_REGION \
