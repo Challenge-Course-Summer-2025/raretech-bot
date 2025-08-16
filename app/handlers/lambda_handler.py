@@ -23,7 +23,7 @@ def handler(event, context):
         PostService(org_id).run()
         logger.info("✅ X投稿処理を実行しました")
 
-    elif action == "collect_clicks":
+    elif action == "tally":
         ClickCollector().run()
         logger.info("✅ クリック集計処理を実行しました")
 
