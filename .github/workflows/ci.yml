@@ -50,6 +50,7 @@ jobs:
           SHORTIO_ACCESS_TOKEN: dummy
           DB_TABLE_ARTICLE_CLICKS: dummy
           DB_TABLE_STATIC_LINK_CLICKS: dummy
+          DB_TABLE_API_STATUS: dummy
         run: |
           docker run -d -p 8000:8000 --name test-api \
             -e AWS_REGION=$AWS_REGION \
@@ -66,6 +67,7 @@ jobs:
             -e SHORTIO_ACCESS_TOKEN=$SHORTIO_ACCESS_TOKEN \
             -e DB_TABLE_ARTICLE_CLICKS=$DB_TABLE_ARTICLE_CLICKS \
             -e DB_TABLE_STATIC_LINK_CLICKS=$DB_TABLE_STATIC_LINK_CLICKS \
+            -e DB_TABLE_API_STATUS=$DB_TABLE_API_STATUS \
             raretech-bot
           sleep 5
           curl -f http://localhost:8000 || (docker logs test-api && exit 1)
