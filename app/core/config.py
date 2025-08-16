@@ -19,9 +19,13 @@ class Settings(BaseSettings):
     X_ACCESS_TOKEN: str
     X_ACCESS_TOKEN_SECRET: str
     X_USERNAME: str
+    SHORTIO_ACCESS_TOKEN: str
+    SHORTIO_DOMAIN: Optional[str] = "raretech.short.gy"
     DYNAMODB_ENDPOINT: Optional[str] = None
     DB_TABLE_POST_HISTORY: str
     DB_TABLE_TEMPLATE: str
+    DB_TABLE_ARTICLE_CLICKS: str
+    DB_TABLE_STATIC_LINK_CLICKS: str
     AWS_REGION: str
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
@@ -41,16 +45,15 @@ def load_secrets():
     region = os.getenv("AWS_REGION", "ap-northeast-1")
 
     session = boto3.session.Session()
-    client = session.client(
-        service_name="secretsmanager",
-        region_name=region
-        )
+    client = session.client(service_name="secretsmanager", region_name=region)
 
     try:
         response = client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(response["SecretString"])
     except Exception as e:
-        raise RuntimeError(f"Secrets Managerからシークレットを取得できませんでした: {e}")
+        raise RuntimeError(
+            f"Secrets Managerからシークレットを取得できませんでした: {e}"
+        )
 
     # 各値を上書き
     for key, value in secret_dict.items():

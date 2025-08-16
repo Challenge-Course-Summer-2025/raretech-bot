@@ -1,16 +1,20 @@
 from app.core.config import settings
 from app.services.post import PostService
+from app.services.tally import ClickCollector
 
 
-def handler(event, context):
-    org_id = settings.QIITA_ORGANIZATION_ID
-    if not org_id:
-        raise ValueError("環境変数 QIITA_ORGANIZATION_ID を設定してください")
+def handler(event):
+    action = event.get("action")
 
-    service = PostService(org_id)
-    service.run()
+    if action == "post":
+        org_id = settings.QIITA_ORGANIZATION_ID
+        if not org_id:
+            raise ValueError(
+                "環境変数 QIITA_ORGANIZATION_ID を設定してください"
+            )
+        PostService(org_id).run()
 
-    return {
-        "statusCode": 200,
-        "body": "PostService executed successfully"
-    }
+    elif action == "collect_clicks":
+        ClickCollector().run()
+
+    return {"statusCode": 200, "body": f"{action} executed successfully"}

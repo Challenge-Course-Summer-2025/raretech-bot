@@ -11,10 +11,12 @@ class QiitaClient:
 
         items = []
         for entry in feed.entries:
-            items.append({
-                "id": entry.id,
-                "title": entry.title,
-                "url": entry.link,
-                "user": entry.author,
-            })
+            items.append(
+                {
+                    "id": entry.id,
+                    "title": entry.title,
+                    "url": entry.link,
+                    "user": entry.author,
+                }
+            )
         return items
