@@ -7,6 +7,7 @@ posts_table = db.Table(settings.DB_TABLE_POST_HISTORY)
 templates_table = db.Table(settings.DB_TABLE_TEMPLATE)
 article_clicks_table = db.Table(settings.DB_TABLE_ARTICLE_CLICKS)
 static_link_clicks_table = db.Table(settings.DB_TABLE_STATIC_LINK_CLICKS)
+api_status_table = db.Table(settings.DB_TABLE_API_STATUS)
 
 
 def query_active_templates(limit=1):
@@ -16,7 +17,7 @@ def query_active_templates(limit=1):
     """
     return templates_table.query(
         IndexName="GSI_ActiveTemplates",
-        KeyConditionExpression=Key("is_active").eq(True),
+        KeyConditionExpression=Key("is_active").eq(1),
         ScanIndexForward=False,
         Limit=limit,
     )
@@ -54,7 +55,7 @@ def query_posts_by_qiita_id(qiita_id: str):
 def query_posted_X(limit=10, start_key=None, projection: str = None):
     kwargs = {
         "IndexName": "posted_X-index",
-        "KeyConditionExpression": Key("is_posted_X").eq(True),
+        "KeyConditionExpression": Key("is_posted_X").eq(1),
         "ScanIndexForward": True,
         "Limit": limit,
     }
@@ -97,3 +98,8 @@ def get_static_by_checked_date(checked_at_iso: str, projection: str = None):
     if projection:
         kwargs["ProjectionExpression"] = projection
     return static_link_clicks_table.query(**kwargs)
+
+
+# APIステータスの保存
+def put_api_status(item: dict):
+    return api_status_table.put_item(Item=item)

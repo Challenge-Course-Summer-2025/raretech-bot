@@ -19,7 +19,9 @@ def handler(event, context):
     if action == "post":
         org_id = settings.QIITA_ORGANIZATION_ID
         if not org_id:
-            raise ValueError("環境変数 QIITA_ORGANIZATION_ID を設定してください")
+            raise ValueError(
+                "環境変数 QIITA_ORGANIZATION_ID を設定してください"
+            )
         PostService(org_id).run()
         logger.info("✅ X投稿処理を実行しました")
 

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     DB_TABLE_TEMPLATE: str
     DB_TABLE_ARTICLE_CLICKS: str
     DB_TABLE_STATIC_LINK_CLICKS: str
+    DB_TABLE_API_STATUS: str
     AWS_REGION: str
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None

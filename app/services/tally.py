@@ -35,7 +35,7 @@ class ClickCollector:
             "pk, created_at, post_id, short_url, shortio_id, tweet_url, "
             "is_tracked, clicks_article, ctr_article, x_views"
         )
-        for items in sdb.iter_posts_projection(projection=projection):
+        for items in sdb.iter_posted_X(projection=projection):
             for item in items:
                 post_id = item.get("post_id")
                 short_url = item.get("short_url")
@@ -75,7 +75,7 @@ class ClickCollector:
                 # 保存（POST行のメトリクス更新）
                 try:
                     sdb.update_post_metrics_row(
-                        item["created_at"], clicks, x_views, ctr
+                        item["post_id"], checked_at_str, clicks, x_views, ctr
                     )
                     updated += 1
                     print(

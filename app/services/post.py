@@ -3,8 +3,13 @@ from app.clients.qiita import QiitaClient
 from app.clients.x import XClient
 from app.clients.mattermost import MattermostClient
 from app.clients.shortIo import ShortIoClient
-from app.services.db import get_template, save_post_history
-from app.services.db import get_old_post_history, is_posted
+from app.services.db import (
+    get_template,
+    save_post_history,
+    get_old_post_history,
+    is_posted,
+    update_api_status,
+)
 
 
 class PostService:
@@ -14,94 +19,97 @@ class PostService:
         self.mattermost_client = MattermostClient()
         self.shortio_client = ShortIoClient()
         self.org_id = org_id
+        self.api_status_id = "x_api_status"
 
     def run(self):
-        # 投稿対象のQiita記事を選択
-        article = self.select_article()
-        if not article:
-            print("✅ 投稿対象が見つかりませんでした")
-            return
+        try:
+            article = self.select_article()
+            if not article:
+                print("✅ 投稿対象が見つかりませんでした")
+                return
 
-        # 投稿時刻
-        post_at = datetime.utcnow().date()
+            # 投稿処理全体
+            article = self._prepare_article(article)
+            text_x, text_mm = self.compose_messages(article)
+            tweet_url, is_posted_X = self._post_to_x(text_x)
+            is_posted_Mattermost = self._post_to_mattermost(text_mm, tweet_url)
 
-        # 短縮URL作成（失敗したら元URLを使用）
+            # 履歴保存
+            article.update(
+                {
+                    "tweet_url": tweet_url,
+                    "clicks": 0 if article["is_tracked"] else None,
+                    "post_at": datetime.utcnow().date(),
+                    "is_posted_X": is_posted_X,
+                    "is_posted_Mattermost": is_posted_Mattermost,
+                }
+            )
+            save_post_history(article)
+            update_api_status(self.api_status_id, "正常", None)
+
+        except Exception as e:
+            print(f"❌ PostService.run 例外: {e}")
+            update_api_status(self.api_status_id, "異常", str(e))
+            raise
+
+    # --- private methods ---
+
+    def _prepare_article(self, article: dict) -> dict:
+        """短縮URLを付与（失敗時は元URLを使用）"""
         try:
             short_data = self.shortio_client.shorten_url(article["url"])
-            if not short_data:
-                print(
-                    "⚠️ Short.ioが短縮を返しませんでした。元URLを使用します（クリック集計不可）。"
-                )
-                article["short_url"] = article["url"]
-                is_tracked = False
-            else:
+            if short_data:
                 article["short_url"] = short_data["shortURL"]
                 article["shortio_id"] = short_data["id"]
-                is_tracked = True
+                article["is_tracked"] = True
+            else:
+                print("⚠️ Short.ioが短縮を返さず → 元URLを使用")
+                article["short_url"] = article["url"]
+                article["is_tracked"] = False
         except Exception as e:
-            print(
-                f"❌ Short.io短縮で例外: {e}. 元URLを使用します（クリック集計不可）。"
-            )
+            print(f"❌ Short.io短縮失敗: {e}")
             article["short_url"] = article["url"]
-            is_tracked = False
+            article["is_tracked"] = False
+        return article
 
-        # 投稿文をテンプレートから生成
-        text_x, text_mm = self.compose_messages(article)
-
-        # Xに投稿し、投稿URLを取得
-        tweet_url = None
-        is_posted_X = False
+    def _post_to_x(self, text: str) -> tuple[str | None, bool]:
+        """Xに投稿してURLを返す"""
         try:
-            tweet_url = self.x_client.post_tweet(text_x)
-            if tweet_url:
-                is_posted_X = True
+            tweet_url = self.x_client.post_tweet(text)
+            return tweet_url, bool(tweet_url)
         except Exception as e:
             print(f"❌ X投稿失敗: {e}")
+            return None, False
 
-        # Mattermostに投稿
-        is_posted_Mattermost = False
+    def _post_to_mattermost(
+        self, text_template: str, tweet_url: str | None
+    ) -> bool:
+        """Mattermostに投稿"""
         try:
-            mm_message = text_mm.format(tweet_url=tweet_url or "")
-            mm_result = self.mattermost_client.post_message(mm_message)
-            is_posted_Mattermost = bool(mm_result)
+            message = text_template.format(tweet_url=tweet_url or "")
+            return bool(self.mattermost_client.post_message(message))
         except Exception as e:
             print(f"❌ Mattermost投稿失敗: {e}")
+            return False
 
-        # 投稿履歴を保存
-        article["tweet_url"] = tweet_url
-        article["clicks"] = (
-            0 if is_tracked else None
-        )  # Noneなら後続の集計で無視できる
-        article["post_at"] = post_at
-        article["is_posted_X"] = is_posted_X
-        article["is_posted_Mattermost"] = is_posted_Mattermost
-        article["is_tracked"] = (
-            is_tracked  # クリック集計対象かどうか。短縮URLが成功した場合はTrue
-        )
-        save_post_history(article)
+    # --- article selection ---
 
     def select_article(self):
-        """投稿対象のQiita記事を選ぶ"""
         items = self.qiita_client.get_org_items(self.org_id) or []
         if not items:
             print("⚠️ Qiita記事が見つかりません")
             return None
 
-        # 1) 最新記事（未投稿なら即採用）
         latest = self._normalize_qiita_item(items[0])
         if not is_posted(latest["id"]):
             return latest
 
-        # 2) 未投稿の過去記事（新しい順に見て、未投稿の最初の1件）
         for raw in items[1:]:
             item = self._normalize_qiita_item(raw)
             if not is_posted(item["id"]):
                 return item
 
-        # 3) 既投稿の中から最も古いpost_atのもの
-        old_posts = get_old_post_history(
-            limit=1
-        )  # ← DB側で post_at ASC に変更する
+        old_posts = get_old_post_history(limit=1)
         if old_posts:
             row = old_posts[0]
             return {
@@ -110,20 +118,15 @@ class PostService:
                 "url": row.get("url") or row.get("qiita_url"),
                 "user": row["author"],
             }
-
         return None
 
     def _normalize_qiita_item(self, item: dict) -> dict:
-        """Qiita APIのitemを、アプリ内で使う共通形に正規化する"""
         user = item.get("user")
-        user_name = (
-            user.get("id") if isinstance(user, dict) else user
-        )  # API実体に合わせて安全に
         return {
             "id": item["id"],
             "title": item["title"],
             "url": item["url"],
-            "user": user_name,
+            "user": user.get("id") if isinstance(user, dict) else user,
         }
 
     def compose_messages(self, article):

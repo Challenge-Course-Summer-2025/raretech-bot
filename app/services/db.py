@@ -33,7 +33,7 @@ def get_template() -> str:
         return DEFAULT_TEMPLATE
 
 
-# 投稿履歴を保存
+# ▼ 投稿履歴を保存
 def save_post_history(item: dict, template_id: str = None):
     item = type_cnv_for_db(item)
     now = datetime.utcnow().isoformat()
@@ -59,7 +59,7 @@ def save_post_history(item: dict, template_id: str = None):
     return cdb.put_post(item_db)
 
 
-# 投稿済みかどうかをチェック
+# ▼ 投稿済みかどうかをチェック
 def is_posted(qiita_id: str) -> bool:
     resp = cdb.query_posts_by_qiita_id(qiita_id)
     return len(resp.get("Items", [])) > 0
@@ -134,3 +134,19 @@ def sum_static_views_by_date(target_date: date) -> int:
     )
     items = resp.get("Items", []) or []
     return sum(it.get("tweet_views") or 0 for it in items)
+
+
+# ▼ APIステータスの更新
+def update_api_status(
+    id: str,
+    status: str,
+    error_message: str = None,
+):
+    now = datetime.utcnow().isoformat()
+    item = {
+        "id": id,
+        "status": status,
+        "error_message": error_message,
+        "checked_at": now,
+    }
+    return cdb.put_api_status(item)
