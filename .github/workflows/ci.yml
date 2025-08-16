@@ -63,6 +63,9 @@ jobs:
             -e X_USERNAME=$X_USERNAME \
             -e DB_TABLE_POST_HISTORY=$DB_TABLE_POST_HISTORY \
             -e DB_TABLE_TEMPLATE=$DB_TABLE_TEMPLATE \
+            -e SHORTIO_ACCESS_TOKEN=$SHORTIO_ACCESS_TOKEN \
+            -e DB_TABLE_ARTICLE_CLICKS=$DB_TABLE_ARTICLE_CLICKS \
+            -e DB_TABLE_STATIC_LINK_CLICKS=$DB_TABLE_STATIC_LINK_CLICKS \
             raretech-bot
           sleep 5
           curl -f http://localhost:8000 || (docker logs test-api && exit 1)
