@@ -3,7 +3,7 @@ from app.services.post import PostService
 from app.services.tally import ClickCollector
 
 
-def handler(event):
+def handler(event, context):
     action = event.get("action")
 
     if action == "post":
