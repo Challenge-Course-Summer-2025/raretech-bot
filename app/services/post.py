@@ -44,7 +44,7 @@ class PostService:
                     "is_posted_Mattermost": is_posted_Mattermost,
                 }
             )
-            save_post_history(article)
+            save_post_history(article, template_id=article.get("template_id"))
             update_api_status(self.api_status_id, "正常", None)
 
         except Exception as e:
@@ -130,7 +130,8 @@ class PostService:
         }
 
     def compose_messages(self, article):
-        template = get_template()
+        template, template_id = get_template()
+        article["template_id"] = template_id
         text_x = template.format(
             title=article["title"],
             url=article["short_url"],

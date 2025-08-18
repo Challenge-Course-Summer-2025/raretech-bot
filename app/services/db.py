@@ -10,23 +10,23 @@ DEFAULT_TEMPLATE = (
 )
 
 
-def get_template() -> str:
+def get_template() -> tuple[str, str | None]:
     """有効テンプレート → 最新テンプレート → デフォルトの順で取得"""
     try:
         # 1. 有効なテンプレートをGSIから取得
         active_resp = cdb.query_active_templates(limit=1)
         items = active_resp.get("Items", [])
         if items:
-            return items[0]["template"]
+            return items[0]["template"], items[0]["id"]
 
         # 2. 有効テンプレートがない場合、最新テンプレートを取得
         latest_resp = cdb.query_latest_templates(limit=1)
         items = latest_resp.get("Items", [])
         if items:
-            return items[0]["template"]
+            return items[0]["template"], items[0]["id"]
 
         # 3. どちらもない場合はデフォルトを返す
-        return DEFAULT_TEMPLATE
+        return DEFAULT_TEMPLATE, None
 
     except Exception as e:
         print(f"テンプレート取得に失敗: {e}")
@@ -68,9 +68,7 @@ def is_posted(qiita_id: str) -> bool:
 # 最も古い既投稿履歴を取得
 def get_old_post_history(limit=1):
     try:
-        resp = cdb.query_posted_X(
-            limit=limit, projection="id, post_at, tweet_url, created_at"
-        )
+        resp = cdb.query_posted_X(limit=limit)
         items = resp.get("Items", [])
         # 既投稿のみフィルタ（投影属性のみ使用）
         posted_items = [
