@@ -1,12 +1,11 @@
 from fastapi import FastAPI
-from dotenv import load_dotenv
-import os
+from app.api.api import api_router
 
 
 app = FastAPI()
 
-if os.getenv("ENV") != "production":
-    load_dotenv()  # .env を読み込む
+
+app.include_router(api_router)
 
 
 @app.get("/")
