@@ -4,6 +4,12 @@ from app.core.config import settings
 
 class XClient:
     def __init__(self):
+        print("DEBUG BEARER_TOKEN length:", len(settings.BEARER_TOKEN or ""))
+        print("DEBUG X_API_KEY length:", len(settings.X_API_KEY or ""))
+        print("DEBUG X_API_SECRET length:", len(settings.X_API_SECRET or ""))
+        print("DEBUG X_ACCESS_TOKEN length:", len(settings.X_ACCESS_TOKEN or ""))
+        print("DEBUG X_ACCESS_TOKEN_SECRET length:", len(settings.X_ACCESS_TOKEN_SECRET or ""))
+
         self.client = tweepy.Client(
             bearer_token=settings.BEARER_TOKEN,
             consumer_key=settings.X_API_KEY,

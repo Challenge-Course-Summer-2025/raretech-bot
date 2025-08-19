@@ -30,7 +30,10 @@ def handler(event, context):
         logger.info("✅ クリック集計処理を実行しました")
 
     else:
-        logger.warning(f"未対応のアクション: {action}")
-        return {"statusCode": 400, "body": f"Unsupported action: {action}"}
+        org_id = settings.QIITA_ORGANIZATION_ID
+        PostService(org_id).run()
+        logger.info("DEBUG✅ X投稿処理を実行しました")
+        # logger.warning(f"未対応のアクション: {action}")
+        # return {"statusCode": 400, "body": f"Unsupported action: {action}"}
 
     return {"statusCode": 200, "body": f"{action} executed successfully"}
