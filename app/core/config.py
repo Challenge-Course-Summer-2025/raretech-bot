@@ -13,7 +13,6 @@ if os.getenv("ENV") != "production":
 class Settings(BaseSettings):
     QIITA_ORGANIZATION_ID: str
     MATTERMOST_WEBHOOK_URL: str
-    BEARER_TOKEN: str
     X_API_KEY: str
     X_API_SECRET: str
     X_ACCESS_TOKEN: str
