@@ -16,7 +16,6 @@ class XClient:
         )
 
         self.client = tweepy.Client(
-            bearer_token=settings.BEARER_TOKEN,
             consumer_key=settings.X_API_KEY,
             consumer_secret=settings.X_API_SECRET,
             access_token=settings.X_ACCESS_TOKEN,
