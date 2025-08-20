@@ -18,8 +18,10 @@ class ClickCollector:
             "counseling": "lnk_68NC_1cImdUG0iCyFYYjflqJa0",
         }
 
-    def _round_ctr(self, value: float) -> Decimal:
-        return Decimal(str(round(value, 3)))
+    def _ctr(self, clicks: int, views: int) -> Decimal:
+        if not views:
+            return Decimal("0")
+        return (Decimal(clicks) / Decimal(views)).quantize(Decimal("0.001"))
 
     def run(self):
         updated = 0
@@ -71,7 +73,7 @@ class ClickCollector:
                     continue
 
                 # CTR
-                ctr = self._round_ctr(clicks / x_views) if x_views > 0 else 0.0
+                ctr = self._ctr(clicks, x_views)
 
                 # 保存（POST行のメトリクス更新）
                 try:
@@ -81,7 +83,7 @@ class ClickCollector:
                     updated += 1
                     print(
                         f"✅ 記事 {post_id}: clicks={clicks},"
-                        "x_views={x_views}, ctr={ctr}"
+                        f"x_views={x_views}, ctr={ctr}"
                     )
                 except Exception as e:
                     print(f"❌ POST更新失敗 for {post_id}: {e}")
@@ -101,14 +103,8 @@ class ClickCollector:
                 check_target
             ) + sdb.sum_static_views_by_date(check_target)
 
-            ctr_trial = (
-                self._round_ctr(clicks_trial / x_views) if x_views > 0 else 0.0
-            )
-            ctr_counseling = (
-                self._round_ctr(clicks_counseling / x_views)
-                if x_views > 0
-                else 0.0
-            )
+            ctr_trial = self._ctr(clicks_trial, x_views)
+            ctr_counseling = self._ctr(clicks_counseling, x_views)
 
             now = datetime.utcnow().isoformat()
             record = {
@@ -125,8 +121,10 @@ class ClickCollector:
             sdb.save_static_link_clicks_record(record)
             updated += 1
             print(
-                f"✅ 固定リンク: trial={clicks_trial}, "
-                "counseling={clicks_counseling}, views={x_views}"
+                f"✅ 固定リンク: trial={clicks_trial},\
+                counseling={clicks_counseling}, "
+                f"views={x_views}, ctr_trial={ctr_trial},\
+                ctr_counseling={ctr_counseling}"
             )
         except Exception as e:
             print(f"❌ 固定リンク集計失敗: {e}")
