@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 from app.clients.shortIo import ShortIoClient
 from app.clients.x import XClient
 from app.services import db as sdb
@@ -11,14 +12,14 @@ class ClickCollector:
         self.xclient = XClient()
         self.sleep_between_requests = 0.2
 
-        # 固定リンク
+        # 固定リンクのlink_id
         self.static_links = {
-            "trial": "https://raretech.short.gy/trial",
-            "counseling": "https://raretech.short.gy/counseling",
+            "trial": "lnk_68NC_w5gGGBcIk8QE3ZdzZB0bK",
+            "counseling": "lnk_68NC_1cImdUG0iCyFYYjflqJa0",
         }
 
-    def _round_ctr(self, value: float) -> float:
-        return round(value, 3)
+    def _round_ctr(self, value: float) -> Decimal:
+        return Decimal(str(round(value, 3)))
 
     def run(self):
         updated = 0
