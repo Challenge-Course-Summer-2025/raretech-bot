@@ -42,7 +42,6 @@ class PostService:
             article.update(
                 {
                     "tweet_url": tweet_url,
-                    "clicks": 0 if article["is_tracked"] else None,
                     "post_at": datetime.utcnow().date(),
                     "is_posted_X": is_posted_X,
                     "is_posted_Mattermost": is_posted_Mattermost,

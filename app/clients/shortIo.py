@@ -42,9 +42,8 @@ class ShortIoClient:
         headers = {"accept": "*/*", "Authorization": self.api_key}
         try:
             resp = requests.get(
-                url, headers=headers,
-                params=params, timeout=10
-                )
+                url, headers=headers, params=params, timeout=10
+            )
             if resp.status_code != 200:
                 print(
                     f"❌ Short.ioクリック取得失敗: {resp.status_code} {resp.text}"
