@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 def handler(event, context):
     """
-    EventBridgeのルールによって 'action' を渡す想定:
+    EventBridgeのルール
       - X投稿用ルール: action='post'
       - クリック集計用ルール: action='tally'
     """
@@ -31,7 +31,7 @@ def handler(event, context):
 
     else:
         ClickCollector().run()
-        logger.info("✅ DEBUG クリック集計処理を実行しました")
+        logger.info("✅ (手動実行)クリック集計処理を実行しました")
         # logger.warning(f"未対応のアクション: {action}")
         # return {"statusCode": 400, "body": f"Unsupported action: {action}"}
 

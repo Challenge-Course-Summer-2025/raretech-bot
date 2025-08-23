@@ -42,51 +42,55 @@ class ClickCollector:
             for item in items:
                 post_id = item.get("post_id")
                 short_url = item.get("short_url")
-                tweet_url = item.get("tweet_url")
+                # tweet_url = item.get("tweet_url")
 
                 if not short_url or item.get("is_tracked") is False:
                     skipped += 1
                     continue
 
-                # Short.ioクリック数
+                # 記事リンククリック数
                 try:
                     link_id = item.get("shortio_id")
                     clicks = self.shortio.get_clicks(link_id)
+                    print(f"記事リンクID= {link_id} クリック数={clicks}")
                     if clicks is None:
+                        print(
+                            f"[{post_id}] 記事リンククリック数取得エラー: clicks is None"
+                        )
                         errors += 1
                         continue
                 except Exception as e:
-                    print(f"[{post_id}] Short.io取得例外: {e}")
+                    print(f"[{post_id}] 記事リンククリック取得例外: {e}")
                     errors += 1
                     continue
 
                 # X表示数
-                try:
-                    x_views = (
-                        self.xclient.get_tweet_views(tweet_url)
-                        if tweet_url
-                        else 0
-                    )
-                except Exception as e:
-                    print(f"[{post_id}] X表示数取得例外: {e}")
-                    errors += 1
-                    continue
+                # try:
+                #     x_views = (
+                #         self.xclient.get_tweet_views(tweet_url)
+                #         if tweet_url
+                #         else 0
+                #     )
+                # except Exception as e:
+                #     print(f"[{post_id}] X表示数取得例外: {e}")
+                #     errors += 1
+                #     continue
 
                 # CTR
-                ctr = self._ctr(clicks, x_views)
+                # ctr = self._ctr(clicks, x_views)
 
-                # 保存（POST行のメトリクス更新）
+                # 保存（記事メトリクス更新）
                 try:
                     sdb.update_post_metrics_row(
-                        item["post_id"], checked_at_str, clicks, x_views, ctr
+                        item["post_id"],
+                        checked_at_str,
+                        clicks,
+                        # x_views, ctr
                     )
                     updated += 1
-                    print(
-                        f"✅ 記事 {post_id}: clicks={clicks},"
-                        f"x_views={x_views}, ctr={ctr}"
-                    )
+                    print(f"✅ 記事 {post_id}: clicks={clicks},")
                 except Exception as e:
-                    print(f"❌ POST更新失敗 for {post_id}: {e}")
+                    print(f"❌ 記事メトリクス更新失敗 for {post_id}: {e}")
                     errors += 1
 
                 time.sleep(self.sleep_between_requests)

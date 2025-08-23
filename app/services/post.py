@@ -33,6 +33,10 @@ class PostService:
             text_x, text_mm = self.compose_messages(article)
             tweet_url, is_posted_X = self._post_to_x(text_x)
             is_posted_Mattermost = self._post_to_mattermost(text_mm, tweet_url)
+            print(
+                f"[DEBUG] is_posted_X={is_posted_X}"
+                f"is_posted_Mattermost={is_posted_Mattermost}"
+            )
 
             # 履歴保存
             article.update(
@@ -87,7 +91,9 @@ class PostService:
         """Mattermostに投稿"""
         try:
             message = text_template.format(tweet_url=tweet_url or "")
-            return bool(self.mattermost_client.post_message(message))
+            result = self.mattermost_client.post_message(message)
+            print(f"[DEBUG] Mattermost投稿成否={result}")
+            return result
         except Exception as e:
             print(f"❌ Mattermost投稿失敗: {e}")
             return False
