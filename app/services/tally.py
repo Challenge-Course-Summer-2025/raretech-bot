@@ -87,10 +87,11 @@ class ClickCollector:
                 # 保存（記事メトリクス更新）
                 try:
                     sdb.update_post_metrics_row(
-                        item["post_id"],
+                        post_id,
                         checked_at_str,
                         clicks,
-                        # x_views, ctr
+                        None,
+                        None,
                     )
                     updated += 1
                     print(f"✅ 記事 {post_id}: clicks={clicks},")
