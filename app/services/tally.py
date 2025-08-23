@@ -44,7 +44,12 @@ class ClickCollector:
                 short_url = item.get("short_url")
                 # tweet_url = item.get("tweet_url")
 
+                if not post_id:
+                    print(f"⚠️ post_id無しでスキップ: item={item}")
+                    skipped += 1
+                    continue
                 if not short_url or item.get("is_tracked") is False:
+                    print(f"⚠️ short_url無しでスキップ: item={item}")
                     skipped += 1
                     continue
 
