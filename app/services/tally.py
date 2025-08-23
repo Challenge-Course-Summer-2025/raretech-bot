@@ -35,12 +35,12 @@ class ClickCollector:
 
         # 1) 記事リンク集計
         projection = (
-            "pk, created_at, post_id, short_url, shortio_id, tweet_url, "
+            "pk, created_at, id, short_url, shortio_id, tweet_url, "
             "is_tracked, clicks_article, ctr_article, x_views"
         )
         for items in sdb.iter_posted_X(projection=projection):
             for item in items:
-                post_id = item.get("post_id")
+                post_id = item.get("post_id") or item.get("id")
                 short_url = item.get("short_url")
                 # tweet_url = item.get("tweet_url")
 

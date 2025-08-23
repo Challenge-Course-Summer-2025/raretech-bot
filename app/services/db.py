@@ -99,7 +99,11 @@ def iter_posted_X(page_size=50, projection: str = None):
 
 # ▼ 記事メトリクス更新
 def update_post_metrics_row(
-    post_id: str, checked_at: str, clicks: int, x_views: int | None, ctr: float | None
+    post_id: str,
+    checked_at: str,
+    clicks: int,
+    x_views: int | None,
+    ctr: float | None,
 ):
     return cdb.update_post_metrics(post_id, checked_at, clicks, x_views, ctr)
 
