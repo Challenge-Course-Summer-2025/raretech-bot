@@ -5,7 +5,6 @@ from app.core.config import settings
 class XClient:
     def __init__(self):
         self.client = tweepy.Client(
-            bearer_token=settings.BEARER_TOKEN,
             consumer_key=settings.X_API_KEY,
             consumer_secret=settings.X_API_SECRET,
             access_token=settings.X_ACCESS_TOKEN,
@@ -21,20 +20,29 @@ class XClient:
 
     def get_tweet_views(self, tweet_url: str) -> int:
         """
-        ツイートの表示回数（インプレッション数）を取得する
+        Xの表示回数（インプレッション数）を取得する
+        →保留。一旦使用しない
         """
         try:
             tweet_id = tweet_url.strip().split("/")[-1]
             resp = self.client.get_tweet(
                 id=tweet_id,
-                tweet_fields=["public_metrics"],  # 公開メトリクス情報を取得
+                tweet_fields=["public_metrics", "non_public_metrics"],
             )
-
-            if resp.data and "public_metrics" in resp.data:
-                return resp.data["public_metrics"].get("impression_count", 0)
-
-            return 0
+            tweet = resp.data
+            if tweet and hasattr(tweet, "non_public_metrics"):
+                impressions = tweet.non_public_metrics.get(
+                    "impression_count", 0
+                )
+                print(f"[DEBUG] ✅ X表示回数={impressions}")
+                print(
+                    f"[DEBUG] ✅ non_public_metrics={tweet.non_public_metrics}"
+                )
+                return impressions
+            else:
+                print(f"[DEBUG] ⚠️ X表示回数が取得できませんでした: {tweet}")
+                return 0
 
         except Exception as e:
-            print(f"❌ ツイート表示回数取得エラー: {e}")
+            print(f"❌ X表示回数取得エラー: {e}")
             return 0

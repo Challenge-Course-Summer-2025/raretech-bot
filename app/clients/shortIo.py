@@ -6,6 +6,7 @@ class ShortIoClient:
     def __init__(self):
         self.api_key = settings.SHORTIO_ACCESS_TOKEN
         self.base_url = "https://api.short.io"
+        self.get_clicks_base_url = "https://statistics.short.io"
         self.headers = {
             "accept": "application/json",
             "content-type": "application/json",
@@ -36,13 +37,25 @@ class ShortIoClient:
 
     # クリック数取得
     def get_clicks(self, link_id):
-        url = f"{self.base_url}/links/{link_id}"
-        headers = {"accept": "application/json", "Authorization": self.api_key}
+        url = f"{self.get_clicks_base_url}/statistics/link/{link_id}"
+        params = {"period": "total", "tz": "UTC"}
+        headers = {"accept": "*/*", "Authorization": self.api_key}
         try:
-            resp = requests.get(url, headers=headers, timeout=10)
+            resp = requests.get(
+                url, headers=headers, params=params, timeout=10
+            )
+            if resp.status_code != 200:
+                print(
+                    f"❌ Short.ioクリック取得失敗: {resp.status_code} {resp.text}"
+                )
+                return None
             resp.raise_for_status()
             data = resp.json()
-            return data.get("totalClicks")
+            print(
+                f"Short.ioクリック取得: {resp.status_code}"
+                f"humanClicks={data.get('humanClicks')}"
+            )
+            return data.get("humanClicks")
         except Exception as e:
             print(f"❌ Short.ioクリック取得失敗: {e}")
             return None

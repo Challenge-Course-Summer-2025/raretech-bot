@@ -99,7 +99,11 @@ def iter_posted_X(page_size=50, projection: str = None):
 
 # ▼ 記事メトリクス更新
 def update_post_metrics_row(
-    post_id: str, checked_at: str, clicks: int, x_views: int, ctr: float
+    post_id: str,
+    checked_at: str,
+    clicks: int,
+    x_views: int | None,
+    ctr: float | None,
 ):
     return cdb.update_post_metrics(post_id, checked_at, clicks, x_views, ctr)
 
@@ -110,6 +114,7 @@ def sum_post_x_views_by_date(target_date: date) -> int:
     projection = "created_at, x_views"
     for items in iter_posted_X(page_size=50, projection=projection):
         for it in items:
+            print(f"[DEBUG] item = {it}")
             try:
                 d = isoparse(it["created_at"]).date()
             except Exception:

@@ -68,19 +68,33 @@ def query_posted_X(limit=10, start_key=None, projection: str = None):
 
 # 記事の日次メトリクスを更新
 def update_post_metrics(
-    post_id: str, checked_at: str, clicks: int, x_views: int, ctr: float
+    post_id: str,
+    checked_at: str,
+    clicks: int,
+    x_views: int | None,
+    ctr: float | None,
 ):
     now = datetime.utcnow().isoformat()
+
+    expr = ["clicks_article=:c", "updated_at=:u"]
+    values = {
+        ":c": clicks,
+        ":u": now,
+    }
+
+    if x_views is not None:
+        expr.append("tweet_views=:xv")
+        values[":xv"] = x_views
+    if ctr is not None:
+        expr.append("ctr_article=:ctr")
+        values[":ctr"] = ctr
+
+    update_expr = "SET " + ", ".join(expr)
+
     return article_clicks_table.update_item(
         Key={"post_id": post_id, "checked_at": checked_at},
-        UpdateExpression="SET clicks_article=:c, tweet_views=:xv,\
-                        ctr_article=:ctr, updated_at=:u",
-        ExpressionAttributeValues={
-            ":c": clicks,
-            ":xv": x_views,
-            ":ctr": ctr,
-            ":u": now,
-        },
+        UpdateExpression=update_expr,
+        ExpressionAttributeValues=values,
     )
 
 
