@@ -126,7 +126,7 @@ class PostService:
     def _normalize_qiita_item(self, item: dict) -> dict:
         user = item.get("user")
         url = item["url"]
-        qiita_id = url.split("/")[-1] 
+        qiita_id = url.split("/")[-1]
         return {
             "id": qiita_id,
             "title": item["title"],

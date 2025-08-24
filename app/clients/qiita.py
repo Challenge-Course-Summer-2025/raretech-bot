@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 from typing import List, Dict
 
 
@@ -44,6 +45,9 @@ class QiitaClient:
                 link = link_tag["href"]
                 title = link_tag.get_text(strip=True)
 
+                # URLは相対パス/絶対URL両対応
+                full_url = urljoin("https://qiita.com", link)
+
                 # ユーザーID
                 user_tag = article.select_one("header a[href^='/']")
                 user = ""
@@ -54,7 +58,7 @@ class QiitaClient:
                 items.append({
                     "id": link.split("/")[-1],  # Qiita記事ID
                     "title": title,
-                    "url": f"https://qiita.com{link}",
+                    "url": full_url,
                     "user": user,
                 })
 
@@ -62,5 +66,5 @@ class QiitaClient:
                     break
 
             page += 1
-
+        print(f"[DEBUG] Qiita記事取得URL例={full_url}")
         return items
