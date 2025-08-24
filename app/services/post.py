@@ -33,10 +33,6 @@ class PostService:
             text_x, text_mm = self.compose_messages(article)
             tweet_url, is_posted_X = self._post_to_x(text_x)
             is_posted_Mattermost = self._post_to_mattermost(text_mm, tweet_url)
-            print(
-                f"[DEBUG] is_posted_X={is_posted_X}"
-                f"is_posted_Mattermost={is_posted_Mattermost}"
-            )
 
             # 履歴保存
             article.update(
@@ -101,6 +97,8 @@ class PostService:
 
     def select_article(self):
         items = self.qiita_client.get_org_items(self.org_id) or []
+        print(f"[DEBUG] Qiita記事取得数={len(items)}")
+        print(f"[DEBUG] Qiita記事例={(items[0])}")
         if not items:
             print("⚠️ Qiita記事が見つかりません")
             return None
@@ -127,10 +125,12 @@ class PostService:
 
     def _normalize_qiita_item(self, item: dict) -> dict:
         user = item.get("user")
+        url = item["url"]
+        qiita_id = url.split("/")[-1] 
         return {
-            "id": item["id"],
+            "id": qiita_id,
             "title": item["title"],
-            "url": item["url"],
+            "url": url,
             "user": user.get("id") if isinstance(user, dict) else user,
         }
 

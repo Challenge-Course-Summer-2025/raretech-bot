@@ -38,12 +38,14 @@ def save_post_history(item: dict, template_id: str = None):
     item = type_cnv_for_db(item)
     now = datetime.utcnow().isoformat()
     post_id = str(uuid.uuid4())
+    qiita_id = item.get("url").split("/")[-1]
+
     item_db = {
         "id": post_id,
         "post_at": item.get("post_at", now),
         "is_posted_X": item.get("is_posted_X", False),
         "is_posted_Mattermost": item.get("is_posted_Mattermost", False),
-        "qiita_id": item["id"],
+        "qiita_id": qiita_id,
         "title": item.get("title"),
         "author": item.get("user"),
         "template_id": template_id,

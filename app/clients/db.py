@@ -44,7 +44,8 @@ def put_post(item: dict):
     return posts_table.put_item(Item=item)
 
 
-def query_posts_by_qiita_id(qiita_id: str):
+def query_posts_by_qiita_id(qiita_url: str):
+    qiita_id = qiita_url.split("/")[-1]
     return posts_table.query(
         IndexName="qiita_id-index",
         KeyConditionExpression=Key("qiita_id").eq(qiita_id),
