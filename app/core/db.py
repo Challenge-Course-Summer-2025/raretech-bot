@@ -1,4 +1,5 @@
 import boto3
+
 from app.core.config import settings
 
 db = boto3.resource(

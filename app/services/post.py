@@ -1,13 +1,14 @@
 from datetime import datetime
-from app.clients.qiita import QiitaClient
-from app.clients.x import XClient
+
 from app.clients.mattermost import MattermostClient
+from app.clients.qiita import QiitaClient
 from app.clients.shortIo import ShortIoClient
+from app.clients.x import XClient
 from app.services.db import (
-    get_template,
-    save_post_history,
     get_old_post_history,
+    get_template,
     is_posted,
+    save_post_history,
     update_api_status,
 )
 
@@ -31,6 +32,7 @@ class PostService:
             # 投稿処理全体
             article = self._prepare_article(article)
             text_x, text_mm = self.compose_messages(article)
+            print(f"[DEBUG] X投稿文例={text_x}")
             tweet_url, is_posted_X = self._post_to_x(text_x)
             is_posted_Mattermost = self._post_to_mattermost(text_mm, tweet_url)
 
@@ -98,7 +100,6 @@ class PostService:
     def select_article(self):
         items = self.qiita_client.get_org_items(self.org_id) or []
         print(f"[DEBUG] Qiita記事取得数={len(items)}")
-        print(f"[DEBUG] Qiita記事例={(items[0])}")
         if not items:
             print("⚠️ Qiita記事が見つかりません")
             return None

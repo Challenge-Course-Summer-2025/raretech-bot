@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from app.services.tally import ClickCollector
 
 router = APIRouter()

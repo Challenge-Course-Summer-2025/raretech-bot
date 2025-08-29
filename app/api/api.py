@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.api.endpoints import post, tally
 
+from app.api.endpoints import post, tally
 
 api_router = APIRouter()
 

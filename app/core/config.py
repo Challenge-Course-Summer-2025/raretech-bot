@@ -1,10 +1,10 @@
-import os
 import json
-import boto3
+import os
 from typing import Optional
+
+import boto3
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-
 
 if os.getenv("ENV") != "production":
     load_dotenv()

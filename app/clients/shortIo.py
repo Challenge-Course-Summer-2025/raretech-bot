@@ -1,4 +1,5 @@
 import requests
+
 from app.core.config import settings
 
 
@@ -51,10 +52,7 @@ class ShortIoClient:
                 return None
             resp.raise_for_status()
             data = resp.json()
-            print(
-                f"Short.ioクリック取得: {resp.status_code}"
-                f"humanClicks={data.get('humanClicks')}"
-            )
+            print(f"Short.ioクリック取得: {resp.status_code}")
             return data.get("humanClicks")
         except Exception as e:
             print(f"❌ Short.ioクリック取得失敗: {e}")

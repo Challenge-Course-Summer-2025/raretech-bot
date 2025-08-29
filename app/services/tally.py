@@ -1,6 +1,8 @@
 import time
-from datetime import datetime, date, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date, datetime, timedelta
 from decimal import Decimal
+
 from app.clients.shortIo import ShortIoClient
 from app.clients.x import XClient
 from app.services import db as sdb
@@ -38,36 +40,43 @@ class ClickCollector:
             "pk, created_at, id, short_url, shortio_id, tweet_url, "
             "is_tracked, clicks_article, ctr_article, x_views"
         )
+        link_ids = []
         for items in sdb.iter_posted_X(projection=projection):
             for item in items:
                 post_id = item.get("post_id") or item.get("id")
-                short_url = item.get("short_url")
+                link_id = item.get("shortio_id")
                 # tweet_url = item.get("tweet_url")
 
                 if not post_id:
                     print(f"⚠️ post_id無しでスキップ: item={item}")
                     skipped += 1
                     continue
-                if not short_url or item.get("is_tracked") is False:
-                    print(f"⚠️ short_url無しでスキップ: item={item}")
-                    skipped += 1
-                    continue
+                link_ids.append((post_id, link_id))
 
-                # 記事リンククリック数
-                try:
-                    link_id = item.get("shortio_id")
-                    clicks = self.shortio.get_clicks(link_id)
-                    print(f"記事リンクID= {link_id} クリック数={clicks}")
-                    if clicks is None:
-                        print(
-                            f"[{post_id}] 記事リンククリック数取得エラー: clicks is None"
-                        )
-                        errors += 1
-                        continue
-                except Exception as e:
-                    print(f"[{post_id}] 記事リンククリック取得例外: {e}")
-                    errors += 1
-                    continue
+                # 並列に Short.io からクリック数取得
+                with ThreadPoolExecutor(max_workers=5) as executor:
+                    future_to_post = {
+                        executor.submit(
+                            self.shortio.get_clicks, link_id
+                        ): post_id
+                        for post_id, link_id in link_ids
+                    }
+
+                    for future in as_completed(future_to_post):
+                        post_id = future_to_post[future]
+                        try:
+                            clicks = future.result()
+                            if clicks is None:
+                                errors += 1
+                                continue
+                            sdb.update_post_metrics_row(
+                                post_id, checked_at_str, clicks, None, None
+                            )
+                            updated += 1
+                            print(f"✅ 記事 {post_id}: clicks={clicks}")
+                        except Exception as e:
+                            print(f"[{post_id}] エラー: {e}")
+                            errors += 1
 
                 # X表示数
                 # try:

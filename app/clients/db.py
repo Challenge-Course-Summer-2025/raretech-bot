@@ -1,7 +1,9 @@
 from datetime import datetime
+
 from boto3.dynamodb.conditions import Key
-from app.core.db import db
+
 from app.core.config import settings
+from app.core.db import db
 
 posts_table = db.Table(settings.DB_TABLE_POST_HISTORY)
 templates_table = db.Table(settings.DB_TABLE_TEMPLATE)

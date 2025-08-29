@@ -1,7 +1,8 @@
+from typing import Dict, List
+from urllib.parse import urljoin
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-from typing import List, Dict
 
 
 class QiitaClient:
@@ -55,12 +56,14 @@ class QiitaClient:
                     href = user_tag.get("href", "")
                     user = href.strip("/").split("/")[-1]
 
-                items.append({
-                    "id": link.split("/")[-1],  # Qiita記事ID
-                    "title": title,
-                    "url": full_url,
-                    "user": user,
-                })
+                items.append(
+                    {
+                        "id": link.split("/")[-1],  # Qiita記事ID
+                        "title": title,
+                        "url": full_url,
+                        "user": user,
+                    }
+                )
 
                 if len(items) >= max_items:
                     break
