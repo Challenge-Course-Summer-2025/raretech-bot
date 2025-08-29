@@ -13,12 +13,32 @@ class ClickCollector:
         self.shortio = ShortIoClient()
         self.xclient = XClient()
         self.sleep_between_requests = 0.2
+        self.max_workers = 10  # 同時並列数
 
         # 固定リンクのlink_id
         self.static_links = {
             "trial": "lnk_68NC_w5gGGBcIk8QE3ZdzZB0bK",
             "counseling": "lnk_68NC_1cImdUG0iCyFYYjflqJa0",
         }
+
+    def _safe_get_clicks(self, link_id, max_retries=3):
+        for attempt in range(max_retries):
+            try:
+                clicks = self.shortio.get_clicks(link_id)
+                time.sleep(self.sleep_between_requests)  # レート調整
+                return clicks
+            except Exception as e:
+                if (
+                    "Rate limit exceeded" in str(e)
+                    and attempt < max_retries - 1
+                ):
+                    wait = 2**attempt  # 1,2,4秒と待つ
+                    print(
+                        f"⚠️ Rate limit → {wait}秒待機してリトライ (link_id={link_id})"
+                    )
+                    time.sleep(wait)
+                    continue
+                raise
 
     def _ctr(self, clicks: int, views: int) -> Decimal:
         if not views:
@@ -45,7 +65,6 @@ class ClickCollector:
             for item in items:
                 post_id = item.get("post_id") or item.get("id")
                 link_id = item.get("shortio_id")
-                # tweet_url = item.get("tweet_url")
 
                 if not post_id:
                     print(f"⚠️ post_id無しでスキップ: item={item}")
@@ -53,62 +72,32 @@ class ClickCollector:
                     continue
                 link_ids.append((post_id, link_id))
 
-                # 並列に Short.io からクリック数取得
-                with ThreadPoolExecutor(max_workers=5) as executor:
-                    future_to_post = {
-                        executor.submit(
-                            self.shortio.get_clicks, link_id
-                        ): post_id
-                        for post_id, link_id in link_ids
-                    }
+        # 並列に Short.io からクリック数取得
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_post = {
+                executor.submit(self.shortio.get_clicks, link_id): post_id
+                for post_id, link_id in link_ids
+            }
 
-                    for future in as_completed(future_to_post):
-                        post_id = future_to_post[future]
-                        try:
-                            clicks = future.result()
-                            if clicks is None:
-                                errors += 1
-                                continue
-                            sdb.update_post_metrics_row(
-                                post_id, checked_at_str, clicks, None, None
-                            )
-                            updated += 1
-                            print(f"✅ 記事 {post_id}: clicks={clicks}")
-                        except Exception as e:
-                            print(f"[{post_id}] エラー: {e}")
-                            errors += 1
-
-                # X表示数
-                # try:
-                #     x_views = (
-                #         self.xclient.get_tweet_views(tweet_url)
-                #         if tweet_url
-                #         else 0
-                #     )
-                # except Exception as e:
-                #     print(f"[{post_id}] X表示数取得例外: {e}")
-                #     errors += 1
-                #     continue
-
-                # CTR
-                # ctr = self._ctr(clicks, x_views)
-
-                # 保存（記事メトリクス更新）
+            for future in as_completed(future_to_post):
+                post_id = future_to_post[future]
                 try:
+                    clicks = future.result()
+                    if clicks is None:
+                        errors += 1
+                        continue
                     sdb.update_post_metrics_row(
-                        post_id,
-                        checked_at_str,
-                        clicks,
-                        None,
-                        None,
+                        post_id, checked_at_str, clicks, None, None
                     )
                     updated += 1
-                    print(f"✅ 記事 {post_id}: clicks={clicks},")
+                    print(f"✅ 記事 {post_id}: clicks={clicks}")
                 except Exception as e:
-                    print(f"❌ 記事メトリクス更新失敗 for {post_id}: {e}")
+                    print(f"[{post_id}] エラー: {e}")
                     errors += 1
 
-                time.sleep(self.sleep_between_requests)
+        print(
+            f"記事リンク集計完了: updated={updated}, skipped={skipped}, errors={errors}"
+        )
 
         # 2) 固定リンク（trial / counseling）
         try:
