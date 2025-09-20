@@ -1,7 +1,8 @@
+import logging
+
 from app.core.config import settings
 from app.services.post import PostService
 from app.services.tally import ClickCollector
-import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

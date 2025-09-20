@@ -1,7 +1,9 @@
 from datetime import datetime
+
 from boto3.dynamodb.conditions import Key
-from app.core.db import db
+
 from app.core.config import settings
+from app.core.db import db
 
 posts_table = db.Table(settings.DB_TABLE_POST_HISTORY)
 templates_table = db.Table(settings.DB_TABLE_TEMPLATE)
@@ -44,7 +46,8 @@ def put_post(item: dict):
     return posts_table.put_item(Item=item)
 
 
-def query_posts_by_qiita_id(qiita_id: str):
+def query_posts_by_qiita_id(qiita_url: str):
+    qiita_id = qiita_url.split("/")[-1]
     return posts_table.query(
         IndexName="qiita_id-index",
         KeyConditionExpression=Key("qiita_id").eq(qiita_id),

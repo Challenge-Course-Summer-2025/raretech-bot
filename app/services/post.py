@@ -1,13 +1,13 @@
 from datetime import datetime
-from app.clients.qiita import QiitaClient
-from app.clients.x import XClient
+
 from app.clients.mattermost import MattermostClient
+from app.clients.qiita import QiitaClient
 from app.clients.shortIo import ShortIoClient
+from app.clients.x import XClient
 from app.services.db import (
     get_template,
-    save_post_history,
-    get_old_post_history,
     is_posted,
+    save_post_history,
     update_api_status,
 )
 
@@ -31,12 +31,9 @@ class PostService:
             # 投稿処理全体
             article = self._prepare_article(article)
             text_x, text_mm = self.compose_messages(article)
+            print(f"[DEBUG] X投稿文例={text_x}")
             tweet_url, is_posted_X = self._post_to_x(text_x)
             is_posted_Mattermost = self._post_to_mattermost(text_mm, tweet_url)
-            print(
-                f"[DEBUG] is_posted_X={is_posted_X}"
-                f"is_posted_Mattermost={is_posted_Mattermost}"
-            )
 
             # 履歴保存
             article.update(
@@ -100,37 +97,30 @@ class PostService:
     # --- article selection ---
 
     def select_article(self):
-        items = self.qiita_client.get_org_items(self.org_id) or []
+        items = (
+            self.qiita_client.get_org_items(self.org_id, max_items=100) or []
+        )
+        print(f"[DEBUG] 最新記事取得数={len(items)}")
         if not items:
-            print("⚠️ Qiita記事が見つかりません")
             return None
 
-        latest = self._normalize_qiita_item(items[0])
-        if not is_posted(latest["id"]):
-            return latest
-
-        for raw in items[1:]:
+        # 未投稿を探して返す
+        for raw in items:
             item = self._normalize_qiita_item(raw)
             if not is_posted(item["id"]):
                 return item
 
-        old_posts = get_old_post_history(limit=1)
-        if old_posts:
-            row = old_posts[0]
-            return {
-                "id": row["qiita_id"],
-                "title": row["title"],
-                "url": row.get("url") or row.get("qiita_url"),
-                "user": row["author"],
-            }
+        print("✅ 全て投稿済み")
         return None
 
     def _normalize_qiita_item(self, item: dict) -> dict:
         user = item.get("user")
+        url = item["url"]
+        qiita_id = url.split("/")[-1]
         return {
-            "id": item["id"],
+            "id": qiita_id,
             "title": item["title"],
-            "url": item["url"],
+            "url": url,
             "user": user.get("id") if isinstance(user, dict) else user,
         }
 

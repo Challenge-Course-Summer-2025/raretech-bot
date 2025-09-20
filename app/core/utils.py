@@ -1,5 +1,5 @@
-from decimal import Decimal, ROUND_HALF_UP
-from datetime import datetime, date
+from datetime import date, datetime
+from decimal import ROUND_HALF_UP, Decimal
 
 
 def type_cnv_for_db(obj):

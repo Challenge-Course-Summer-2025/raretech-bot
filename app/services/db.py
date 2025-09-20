@@ -1,9 +1,10 @@
 import uuid
-from datetime import datetime, date
+from datetime import date, datetime
+
 from dateutil.parser import isoparse
+
 from app.clients import db as cdb
 from app.core.utils import type_cnv_for_db
-
 
 DEFAULT_TEMPLATE = (
     "【Qiita】{title} by {user}\n{url} #Qiita #HackathonChallenge"
@@ -38,12 +39,14 @@ def save_post_history(item: dict, template_id: str = None):
     item = type_cnv_for_db(item)
     now = datetime.utcnow().isoformat()
     post_id = str(uuid.uuid4())
+    qiita_id = item.get("url").split("/")[-1]
+
     item_db = {
         "id": post_id,
         "post_at": item.get("post_at", now),
         "is_posted_X": item.get("is_posted_X", False),
         "is_posted_Mattermost": item.get("is_posted_Mattermost", False),
-        "qiita_id": item["id"],
+        "qiita_id": qiita_id,
         "title": item.get("title"),
         "author": item.get("user"),
         "template_id": template_id,
@@ -63,23 +66,6 @@ def save_post_history(item: dict, template_id: str = None):
 def is_posted(qiita_id: str) -> bool:
     resp = cdb.query_posts_by_qiita_id(qiita_id)
     return len(resp.get("Items", [])) > 0
-
-
-# 最も古い既投稿履歴を取得
-def get_old_post_history(limit=1):
-    try:
-        resp = cdb.query_posted_X(limit=limit)
-        items = resp.get("Items", [])
-        # 既投稿のみフィルタ（投影属性のみ使用）
-        posted_items = [
-            item
-            for item in items
-            if item.get("is_posted_X", True) or item.get("tweet_url")
-        ]
-        return posted_items
-    except Exception as e:
-        print(f"過去の投稿履歴の取得に失敗: {e}")
-        return []
 
 
 # ▼ POSTを投影付きでページング反復
