@@ -68,23 +68,6 @@ def is_posted(qiita_id: str) -> bool:
     return len(resp.get("Items", [])) > 0
 
 
-# 最も古い既投稿履歴を取得
-def get_old_post_history(limit=1):
-    try:
-        resp = cdb.query_posted_X(limit=limit)
-        items = resp.get("Items", [])
-        # 既投稿のみフィルタ（投影属性のみ使用）
-        posted_items = [
-            item
-            for item in items
-            if item.get("is_posted_X", True) or item.get("tweet_url")
-        ]
-        return posted_items
-    except Exception as e:
-        print(f"過去の投稿履歴の取得に失敗: {e}")
-        return []
-
-
 # ▼ POSTを投影付きでページング反復
 def iter_posted_X(page_size=50, projection: str = None):
     last_key = None

@@ -5,7 +5,6 @@ from app.clients.qiita import QiitaClient
 from app.clients.shortIo import ShortIoClient
 from app.clients.x import XClient
 from app.services.db import (
-    get_old_post_history,
     get_template,
     is_posted,
     save_post_history,
@@ -98,30 +97,20 @@ class PostService:
     # --- article selection ---
 
     def select_article(self):
-        items = self.qiita_client.get_org_items(self.org_id) or []
-        print(f"[DEBUG] Qiita記事取得数={len(items)}")
+        items = (
+            self.qiita_client.get_org_items(self.org_id, max_items=100) or []
+        )
+        print(f"[DEBUG] 最新記事取得数={len(items)}")
         if not items:
-            print("⚠️ Qiita記事が見つかりません")
             return None
 
-        latest = self._normalize_qiita_item(items[0])
-        if not is_posted(latest["id"]):
-            return latest
-
-        for raw in items[1:]:
+        # 未投稿を探して返す
+        for raw in items:
             item = self._normalize_qiita_item(raw)
             if not is_posted(item["id"]):
                 return item
 
-        old_posts = get_old_post_history(limit=1)
-        if old_posts:
-            row = old_posts[0]
-            return {
-                "id": row["qiita_id"],
-                "title": row["title"],
-                "url": row.get("url") or row.get("qiita_url"),
-                "user": row["author"],
-            }
+        print("✅ 全て投稿済み")
         return None
 
     def _normalize_qiita_item(self, item: dict) -> dict:

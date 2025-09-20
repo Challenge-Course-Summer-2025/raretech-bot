@@ -69,5 +69,5 @@ class QiitaClient:
                     break
 
             page += 1
-        print(f"[DEBUG] Qiita記事取得URL例={full_url}")
+        print(f"[DEBUG] 取得記事数={len(articles)}")
         return items
